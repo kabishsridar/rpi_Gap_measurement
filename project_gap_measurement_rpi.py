@@ -7,9 +7,11 @@ from pathlib import Path
 import numpy as np
 # from collections import defaultdict
 from group_lines import group_lines_by_y
+from picamera2 import Picamera2
+import time
 
 def get_calib_data():
-    calib_data_path = "C:\\rail_concrete_measurement\\calibrated_data\\MultiMatrix.npz"
+    calib_data_path = "/home/kabish/python_projects/rpi_Gap_measurement/calibrated_data/MultiMatrix.npz"
     calib_data = np.load(calib_data_path)
     # print(calib_data.files)
 
@@ -52,18 +54,27 @@ def splash(boolean_val):
             pass  # if the window has not yet started, now it will not result an error. With help of this, it will pass the opencv error
 
 def detect():
-    cap = cv.VideoCapture(0) # captures the video from camera
-    if not cap.isOpened(): # if cannot open the camera, it should return a message and exit
-        print("Cannot open Camera")
-        return
+    picam2 = Picamera2()
+    config = picam2.create_preview_configuration(
+        main={"size": (1280, 720)},
+        lores={"size": (640, 480)},
+        display="lores"
+    )
+    picam2.configure(config)
+    picam2.start()
+    time.sleep(1)
+
+    cv.namedWindow("Omac Distance Measurement", cv.WINDOW_NORMAL)
+
     
     lower_white = np.array([0, 0, 200]) # the range of white color
     upper_white = np.array([180, 30, 255])
     measurements = [] # empty list to calculate average
 
     while True:
-        ret, frame = cap.read() # reading the video
-        if not ret: # if cannot read the image, return the error message and break the loop
+        frame = picam2.capture_array() # reading the video
+        # frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
+        if frame is None: # if cannot read the image, return the error message and break the loop
             print("cannot read image")
             break
 
@@ -152,7 +163,7 @@ def detect():
     print(f"number of measurements taken : {len(measurements)}")
     print(f"\nDistance between two lines : { sum(measurements)/ len(measurements)}")
         
-    cap.release()
+    picam2.stop()
     cv.destroyAllWindows() # cleaning up the window
 
 
