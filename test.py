@@ -1,25 +1,31 @@
 import cv2
 import numpy as np
+from picamera2 import Picamera2
+import time
 
-cap = cv2.VideoCapture(0)
-lower_white = np.array([0, 0, 200])
-upper_white = np.array([180, 30, 255])
+picam2 = Picamera2()
+config = picam2.create_preview_configuration(
+    main={"size": (1280, 720)},
+    lores={"size": (640, 480)},
+    display="lores"
+)
+picam2.configure(config)
+picam2.start()
+time.sleep(1)
+cv2.namedWindow('testing', cv2.WINDOW_NORMAL)
 
-if not cap.isOpened():
-    print("cannot open the camera")
-    exit()
+lower_white = np.array([0, 0, 160])
+upper_white = np.array([180, 60, 255])
 
 while True:
-    ret, frame = cap.read()
-    if not ret:
-        print("the frame is not read")
-        break
+    frame = picam2.capture_array()
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) # converts the frame to HSV , so that we can select only the white color
     mask = cv2.inRange(hsv, lower_white, upper_white) # creates a mask
     res = cv2.bitwise_and(frame, frame, mask=mask) # merges the mask with the original frame
+    res_blur = cv2.GaussianBlur(res, (5, 5), 0)
 
-    edges = cv2.Canny(res, 100, 800) # detecting the edges using Canny edge detection of the white image
+    edges = cv2.Canny(res_blur, 100, 800) # detecting the edges using Canny edge detection of the white image
     lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, maxLineGap=10) # detecting the lines
     line_img = res.copy() # creating a copy frame to draw the lines
 
@@ -57,5 +63,5 @@ else:
 
     print(f"Distance between line 1 and line 2: {distance:.2f} mm")
 
-cap.release()
+picam2.stop()
 cv2.destroyAllWindows()

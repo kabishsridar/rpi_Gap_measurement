@@ -11,7 +11,7 @@ from picamera2 import Picamera2
 import time
 
 def get_calib_data():
-    calib_data_path = "/home/kabish/python_projects/rpi_Gap_measurement/calibrated_data/MultiMatrix.npz"
+    calib_data_path = "/home/kabish/python_projects/rpi_Gap_measurement/calibrated_data/MultiMatrix_rpi.npz"
     calib_data = np.load(calib_data_path)
     # print(calib_data.files)
 
@@ -63,12 +63,9 @@ def detect():
     picam2.configure(config)
     picam2.start()
     time.sleep(1)
-
-    cv.namedWindow("Omac Distance Measurement", cv.WINDOW_NORMAL)
-
     
-    lower_white = np.array([0, 0, 200]) # the range of white color
-    upper_white = np.array([180, 30, 255])
+    lower_white = np.array([0, 0, 160])
+    upper_white = np.array([180, 60, 255])
     measurements = [] # empty list to calculate average
 
     while True:
@@ -91,7 +88,9 @@ def detect():
         mask = cv.inRange(hsv, lower_white, upper_white) # creates a mask
         res = cv.bitwise_and(undistorted_frame, undistorted_frame, mask=mask) # merges the mask with the original frame
 
-        edges = cv.Canny(res, 100, 800) # detecting the edges using Canny edge detection of the white image
+        blur = cv.GaussianBlur(res, (5, 5), 0)
+
+        edges = cv.Canny(blur, 50, 150) # detecting the edges using Canny edge detection of the white image
         # Optional: Close small gaps between edge segments
         kernel = np.ones((3, 3), np.uint8)
         edges = cv.morphologyEx(edges, cv.MORPH_CLOSE, kernel)
@@ -122,6 +121,7 @@ def detect():
             splash(no_line)
 
             # Use grouped line detection
+            
             line_groups = group_lines_by_y(lines, threshold=20)
             group_ys = sorted(line_groups.keys())
             
