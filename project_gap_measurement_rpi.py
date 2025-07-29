@@ -64,8 +64,8 @@ def detect():
     picam2.start()
     time.sleep(1)
     
-    lower_white = np.array([0, 0, 160])
-    upper_white = np.array([180, 60, 255])
+    lower_white = np.array([90, 50, 184])
+    upper_white = np.array([110, 149, 255])
     measurements = [] # empty list to calculate average
 
     while True:
@@ -76,6 +76,8 @@ def detect():
             break
 
         undistorted_frame = cv.undistort(frame, cam_mat, dist_coeff)
+        original = cv.cvtColor(undistorted_frame, cv.COLOR_BGR2RGB)
+        cv.imshow('img', original)
 
         # image = cv.flip(undistorted_frame, 1) # the camera normally will mirror the images, now the flip will give the original image
         # app.original_image = undistorted_frame # set original image as the image we get
@@ -89,6 +91,7 @@ def detect():
         res = cv.bitwise_and(undistorted_frame, undistorted_frame, mask=mask) # merges the mask with the original frame
 
         blur = cv.GaussianBlur(res, (5, 5), 0)
+        
 
         edges = cv.Canny(blur, 50, 150) # detecting the edges using Canny edge detection of the white image
         # Optional: Close small gaps between edge segments
