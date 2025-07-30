@@ -1,21 +1,10 @@
-from picamera2 import Picamera2
 import cv2 as cv
+from cv2 import aruco
+import numpy as np
 
-picam2 = Picamera2()
-picam2.preview_configuration.main.size = (640, 480)
-picam2.preview_configuration.main.format = "RGB888"
-picam2.configure("preview")
-picam2.start()
+dummy_img = np.zeros((480, 640), dtype=np.uint8)
+marker_dict = aruco.getPredefinedDictionary(aruco.DICT_5X5_250)
+params = aruco.DetectorParameters()
 
-while True:
-    try:
-        frame = picam2.capture_array()
-        frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
-        cv.imshow("PiCam Test", frame)
-        if cv.waitKey(1) & 0xFF == ord('q'):
-            break
-    except Exception as e:
-        print(f"Error: {e}")
-        break
-
-cv.destroyAllWindows()
+# This line likely causes the crash
+corners, ids, rejected = aruco.detectMarkers(dummy_img, marker_dict, parameters=params)

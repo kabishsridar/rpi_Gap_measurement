@@ -4,6 +4,7 @@ import numpy as np
 from picamera2 import Picamera2
 import time
 
+# Initialize PiCamera2
 picam2 = Picamera2()
 config = picam2.create_preview_configuration(
     main={"size": (1280, 720)},
@@ -14,20 +15,25 @@ picam2.configure(config)
 picam2.start()
 time.sleep(1)
 
-# Load camera calibration data
-calib_data_path = "/home/kabish/python_projects/rpi_Gap_measurement/calibrated_data/MultiMatrix_rpi.npz"
-calib_data = np.load(calib_data_path)
+# Create a display window
+cv.namedWindow("RPI connection", cv.WINDOW_NORMAL)
 
+# Load calibration data
+calib_data = np.load("/home/kabish/python_projects/calib_data_rpi/MultiMatrix.npz")
 cam_mat = calib_data["camMatrix"]
 dist_coef = calib_data["distCoef"]
+r_vectors = calib_data["rVector"]
+t_vectors = calib_data["tVector"]
 
-# Set marker size in centimeters
+MARKER_SIZE = 6  # in centimeters
+
+# ArUco marker dictionary and detector parameters
+marker_dict = aruco.getPredefinedDictionary(aruco.DICT_5X5_250)
+param_markers = aruco.DetectorParameters_create()  # Use legacy method for OpenCV < 4.7
+
 MARKER_SIZE_CM = 10
 MARKER_SIZE_MM = MARKER_SIZE_CM * 10  # for mm conversion
 
-# ArUco settings
-marker_dict = aruco.getPredefinedDictionary(aruco.DICT_5X5_250)
-param_markers = aruco.DetectorParameters()
 while True:
     frame = picam2.capture_array()
 
