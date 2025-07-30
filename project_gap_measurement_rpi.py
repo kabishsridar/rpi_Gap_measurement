@@ -64,8 +64,8 @@ def detect():
     picam2.start()
     time.sleep(1)
     
-    lower_white = np.array([90, 50, 184])
-    upper_white = np.array([110, 149, 255])
+    lower_white = np.array([0, 0, 200])
+    upper_white = np.array([180, 30, 255])
     measurements = [] # empty list to calculate average
 
     while True:
@@ -73,7 +73,7 @@ def detect():
         # frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
         if frame is None: # if cannot read the image, return the error message and break the loop
             print("cannot read image")
-            break
+            break 
 
         undistorted_frame = cv.undistort(frame, cam_mat, dist_coeff)
         original = cv.cvtColor(undistorted_frame, cv.COLOR_BGR2RGB)
@@ -90,10 +90,9 @@ def detect():
         mask = cv.inRange(hsv, lower_white, upper_white) # creates a mask
         res = cv.bitwise_and(undistorted_frame, undistorted_frame, mask=mask) # merges the mask with the original frame
 
-        blur = cv.GaussianBlur(res, (5, 5), 0)
-        
+        # blur = cv.GaussianBlur(res, (5, 5), 0)
 
-        edges = cv.Canny(blur, 50, 150) # detecting the edges using Canny edge detection of the white image
+        edges = cv.Canny(res, 50, 150) # detecting the edges using Canny edge detection of the white image
         # Optional: Close small gaps between edge segments
         kernel = np.ones((3, 3), np.uint8)
         edges = cv.morphologyEx(edges, cv.MORPH_CLOSE, kernel)
@@ -168,7 +167,6 @@ def detect():
         
     picam2.stop()
     cv.destroyAllWindows() # cleaning up the window
-
 
 if __name__ == "__main__":
     # sys.path.insert(0, str(Path(__file__).resolve().parent))

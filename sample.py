@@ -1,25 +1,21 @@
 from picamera2 import Picamera2
-import cv2
-import time
+import cv2 as cv
 
 picam2 = Picamera2()
-config = picam2.create_preview_configuration(
-    main={"size": (1280, 720)},
-    lores={"size": (640, 480)},
-    display="lores"
-)
-picam2.configure(config)
+picam2.preview_configuration.main.size = (640, 480)
+picam2.preview_configuration.main.format = "RGB888"
+picam2.configure("preview")
 picam2.start()
-time.sleep(0)
 
 while True:
-    frame = picam2.capture_array()
-    org = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    edges = cv2.Canny(org, 100, 450)
-    cv2.imshow('canny', edges)
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    try:
+        frame = picam2.capture_array()
+        frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
+        cv.imshow("PiCam Test", frame)
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
+    except Exception as e:
+        print(f"Error: {e}")
         break
 
-picam2.stop()
-cv2.destroyAllWindows()
+cv.destroyAllWindows()
