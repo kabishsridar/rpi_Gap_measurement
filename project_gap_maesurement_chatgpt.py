@@ -34,8 +34,9 @@ def detect():
     measurements = []
 
     # Set once based on known pixel gap vs mm on flat surface
-    SCALING_FACTOR_MM = 136.4 / 500  # e.g., 50 mm corresponds to 100 pixel difference or 132 / 490
-
+    SCALING_FACTOR_MM = (136.4 / 500)  # e.g., 50 mm corresponds to 100 pixel difference or 132 / 490
+# we checked the aruco marker set up, the scale factor calculated above is correct
+# because we measured the dimension with the steel scale between the aruco markers
     while True:
         frame = picam2.capture_array()
         if frame is None:
@@ -89,16 +90,18 @@ def detect():
             cv.line(line_img, (center_x, top_y), (center_x, bottom_y), (0, 0, 255), 2)
 
             # Project pixel positions into normalized space
-            py_top = pixel_to_world_y(top_y, cam_mat)
-            py_bottom = pixel_to_world_y(bottom_y, cam_mat)
-            real_distance = abs(py_bottom - py_top) * SCALING_FACTOR_MM * 1000  # mm
+            #print(pixel_to_world_y(10, cam_mat), "pixel to world")
+            #py_top = pixel_to_world_y(top_y, cam_mat)
+            #print(py_top, top_y, "This is py_top and top_y")
+            #py_bottom = pixel_to_world_y(bottom_y, cam_mat)
+            real_distance = abs(bottom_y - top_y) * SCALING_FACTOR_MM  # mm
 
             measurements.append(real_distance)
             if len(measurements) > 10:
                 measurements.pop(0)
             avg_distance = sum(measurements) / len(measurements)
 
-            cv.putText(line_img, f'Distance: {avg_distance:.2f} mm', (250, 380),
+            cv.putText(line_img, f'Distance: {avg_distance:.2f} mm', (450, 380),
                        cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             # print(f"Distance: {avg_distance:.2f} mm")
 
@@ -106,7 +109,7 @@ def detect():
             cv.putText(line_img, "Need 2 white blocks", (50, 100),
                        cv.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
 
-        cv.putText(line_img, 'Actual Distance: 60 mm', (250, 420),
+        cv.putText(line_img, 'Actual Distance: 70 mm', (450, 420),
                    cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         
 
