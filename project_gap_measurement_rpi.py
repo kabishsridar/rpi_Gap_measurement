@@ -22,7 +22,7 @@ def get_calib_data():
     # print(cam_mat, dist_coef, r_vectors, t_vectors)
     
     return cam_mat, dist_coef
-
+""" 
 def store_to_database(time, distance):# function to store the time and distance to db
     import mysql.connector as m
     from mysql.connector import Error
@@ -52,7 +52,7 @@ def splash(boolean_val):
             cv.destroyWindow('waiting')
         except cv.error:
             pass  # if the window has not yet started, now it will not result an error. With help of this, it will pass the opencv error
-
+ """
 def detect():
     picam2 = Picamera2()
     config = picam2.create_preview_configuration(
@@ -117,10 +117,10 @@ def detect():
             print("Not enough lines detected to calculate distance.")
             # cv.putText(line_img,'OMAC GAP Measurement System',(50,100), cv.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2,cv.LINE_AA)
             no_line = True
-            splash(no_line)
+            # splash(no_line)
         else:
             no_line = False
-            splash(no_line)
+            # splash(no_line)
 
             # Use grouped line detection
             
@@ -128,8 +128,8 @@ def detect():
             group_ys = sorted(line_groups.keys())
             
             if len(group_ys) <= 2:
-                splash(True)
-
+                #splash(True)
+                print("Not enough lines to detect")
 
             else:
                 # these are done by chatgpt
@@ -143,14 +143,13 @@ def detect():
 
                 mid_y = (two_lines[0] + two_lines[1]) // 2
                 pixel_gap = abs(two_lines[0] - two_lines[1])
-                distance = pixel_gap * (135 / 183)
+                distance = pixel_gap * (136.4 / 500)
                 measurements.append(distance)
 
                 cv.putText(line_img, f'Distance: {distance:.2f} mm', (250, 380),
                         cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
                 print(f"Distance between grouped lines: {distance:.2f} mm")
-                
                 
         # cv.imshow("Live Feed", frame) # displays both the original frame and the frame in which edges are detected
         # cv.imshow("Edge Detection", output)
@@ -161,9 +160,9 @@ def detect():
         if cv.waitKey(1) & 0xFF == ord('q'): # it breaks if we press q
             break
         # input('')
-    print(measurements)
-    print(f"number of measurements taken : {len(measurements)}")
-    print(f"\nDistance between two lines : { sum(measurements)/ len(measurements)}")
+    # print(measurements)
+    # print(f"number of measurements taken : {len(measurements)}")
+    # print(f"\nDistance between two lines : { sum(measurements)/ len(measurements)}")
         
     picam2.stop()
     cv.destroyAllWindows() # cleaning up the window
