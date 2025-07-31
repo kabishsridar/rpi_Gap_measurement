@@ -94,7 +94,7 @@ def detect():
             #py_top = pixel_to_world_y(top_y, cam_mat)
             #print(py_top, top_y, "This is py_top and top_y")
             #py_bottom = pixel_to_world_y(bottom_y, cam_mat)
-            real_distance = abs(bottom_y - top_y) * SCALING_FACTOR_MM  # mm
+            real_distance = abs(bottom_y - top_y) * SCALING_FACTOR_MM # mm
 
             measurements.append(real_distance)
             if len(measurements) > 10:
@@ -109,10 +109,30 @@ def detect():
             cv.putText(line_img, "Need 2 white blocks", (50, 100),
                        cv.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
 
-        cv.putText(line_img, 'Actual Distance: 70 mm', (450, 420),
+        cv.putText(line_img, 'Actual Distance: 150 mm', (450, 420),
                    cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         
-
+        correction_ratio = {10 : 0.964, 20 : 0.964, 30 : 0.909, 40 : 0.929, 50 : 0.911, 60 : 0.949, 70 : 0.929, 80 : 0.919, 90 : 0.922, 100 : 0.914, 110 : 0.921,
+                            120 : 0.930, 130 : 0.921, 140 : 0.919}
+        
+        final_distance = correction_ratio * real_distance
+        # ERROR CORRECTION RATIOS:
+        # i need a model for this dataset
+        # 10 -> 0.964320154291
+        # 20 -> 0.964785335263
+        # 30 -> 0.9096422074
+        # 40 -> 0.929152148664
+        # 50 -> 0.911410864017
+        # 60 -> 0.949216896061
+        # 70 -> 0.929985385944
+        # 80 -> 0.91932888991
+        # 90 -> 0.922603792927
+        # 100 -> 0.914160343724
+        # 110 -> 0.921041614335
+        # 120 -> 0.930016275285
+        # 130 -> 0.921724333522
+        # 140 -> 0.919721455788
+        cv.putText(line_img, 'Calculated Distance after error correction : {final_distance}', (450, 440), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         cv.imshow('Detected Blocks', cv.resize(line_img, (1500, 800)))
 
         if cv.waitKey(1) & 0xFF == ord('q'):
