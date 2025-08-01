@@ -36,8 +36,8 @@ while True:
     # Only show if object detected (filter small noise)
     if w > 10 and h > 10:
         cv.rectangle(undistorted, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        cv.putText(undistorted, f"Width: {w} px", (x, y - 10), cv.FONT_HERSHEY_SIMPLEX,
-                   0.6, (255, 0, 0), 2)
+        cv.putText(undistorted, f"height : {h}\nWidth: {w} px", (500, 600), cv.FONT_HERSHEY_SIMPLEX,
+                   0.6, (255, 255, 255), 2)
 
     cv.imshow('Undistorted Frame', undistorted)
 
@@ -47,3 +47,4 @@ while True:
 picam2.stop()
 cv.destroyAllWindows()
 # width in pixel = 103
+# height in pixel = 205
