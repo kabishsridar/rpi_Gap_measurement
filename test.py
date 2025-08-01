@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from edge_detection import EdgeDetector
 
 cap = cv2.VideoCapture(0)
 lower_white = np.array([0, 0, 200])
