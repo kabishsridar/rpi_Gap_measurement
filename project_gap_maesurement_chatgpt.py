@@ -4,7 +4,7 @@ from picamera2 import Picamera2
 import time
 
 def get_calib_data():
-    calib_data_path = "/home/kabish/python_projects/rpi_Gap_measurement/calibrated_data/MultiMatrix_rpi.npz"
+    calib_data_path = "/home/kabish/python_projects/rpi_Gap_measurement/calibrations/calibrated_data/MultiMatrix_rpi.npz"
     calib_data = np.load(calib_data_path)
     cam_mat = calib_data["camMatrix"]
     dist_coef = calib_data["distCoef"]
@@ -115,7 +115,7 @@ def detect():
         correction_ratio = {10 : 0.964, 20 : 0.964, 30 : 0.909, 40 : 0.929, 50 : 0.911, 60 : 0.949, 70 : 0.929, 80 : 0.919, 90 : 0.922, 100 : 0.914, 110 : 0.921,
                             120 : 0.930, 130 : 0.921, 140 : 0.919}
         
-        final_distance = correction_ratio * real_distance
+        # final_distance = correction_ratio * real_distance
         # ERROR CORRECTION RATIOS:
         # i need a model for this dataset
         # 10 -> 0.964320154291
@@ -132,7 +132,7 @@ def detect():
         # 120 -> 0.930016275285
         # 130 -> 0.921724333522
         # 140 -> 0.919721455788
-        cv.putText(line_img, 'Calculated Distance after error correction : {final_distance}', (450, 440), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        # cv.putText(line_img, 'Calculated Distance after correction : {final_distance}', (450, 440), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         cv.imshow('Detected Blocks', cv.resize(line_img, (1500, 800)))
 
         if cv.waitKey(1) & 0xFF == ord('q'):

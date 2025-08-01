@@ -53,8 +53,8 @@ def detect():
 
     # Set once based on known pixel gap vs mm on flat surface
     SCALING_FACTOR_MM = (136.4 / 500)  # e.g., 50 mm corresponds to 100 pixel difference or 132 / 490
-# we checked the aruco marker set up, the scale factor calculated above is correct
-# because we measured the dimension with the steel scale between the aruco markers
+    # we checked the aruco marker set up, the scale factor calculated above is correct
+    # because we measured the dimension with the steel scale between the aruco markers`
     while True:
         frame = picam2.capture_array()
         if frame is None:

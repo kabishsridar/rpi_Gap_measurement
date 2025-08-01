@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
+from edge_detection import EdgeDetector
 from picamera2 import Picamera2
 import time
-
 picam2 = Picamera2()
 config = picam2.create_preview_configuration(
     main={"size": (1280, 720)},
