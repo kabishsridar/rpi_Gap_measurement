@@ -143,7 +143,7 @@ def detect():
 
                 mid_y = (two_lines[0] + two_lines[1]) // 2
                 pixel_gap = abs(two_lines[0] - two_lines[1])
-                distance = pixel_gap * (136.4 / 500)
+                distance = pixel_gap * (135 / 183)
                 measurements.append(distance)
 
                 cv.putText(line_img, f'Distance: {distance:.2f} mm', (250, 380),
