@@ -14,7 +14,7 @@ time.sleep(1)
 lower_white = np.array([0, 0, 200])
 upper_white = np.array([180, 30, 255])
 
-KNOWN_WIDTH_MM = 24.5  # Known width of the reference block in mm
+KNOWN_WIDTH_MM = 25.3  # Known width of the reference block in mm
 
 def process_frame():
     while True:

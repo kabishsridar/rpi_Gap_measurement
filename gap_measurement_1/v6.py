@@ -14,7 +14,7 @@ time.sleep(1)
 lower_white = np.array([0, 0, 200])
 upper_white = np.array([180, 30, 255])
 
-KNOWN_WIDTH_MM = 24.5  # Known width of the reference block in mm
+KNOWN_WIDTH_MM = 25.3  # Known width of the reference block in mm
 
 def process_frame():
     while True:
@@ -73,62 +73,63 @@ def process_frame():
 
         # If at least 2 blocks are found, measure gap
         if len(blocks) >= 2 and scale_factor:
-            blocks.sort(key=lambda b: b["center"][0])  # Sort left to right
+            blocks.sort(key=lambda b: b["area"])
             block1 = blocks[0]
             block2 = blocks[1]
 
-            # Get box points
-            box1 = sorted(block1["box"], key=lambda pt: pt[0])
-            box2 = sorted(block2["box"], key=lambda pt: pt[0])
+            box1 = sorted(block1["box"], key=lambda pt: pt[0])  # sort by x
+            right_edge = [box1[2], box1[3]] if box1[2][1] < box1[3][1] else [box1[3], box1[2]]
+            mid_x = int((right_edge[0][0] + right_edge[1][0]) / 2)
+            mid_y = int((right_edge[0][1] + right_edge[1][1]) / 2)
 
-            # Get Y-range for averaging
-            y_vals_block1 = [pt[1] for pt in box1]
-            y_vals_block2 = [pt[1] for pt in box2]
+            # Extend line to right until hitting second block
+            end_x = mid_x
+            found = False
+            while end_x < frame.shape[1]:
+                test_point = (end_x, mid_y)
+                inside = cv.pointPolygonTest(block2["contour"], test_point, False)
+                if inside >= 0:
+                    found = True
+                    break
+                end_x += 1
 
-            top_y = int((min(y_vals_block1) + min(y_vals_block2)) / 2)
-            mid_y = int((np.mean(y_vals_block1) + np.mean(y_vals_block2)) / 2)
-            bottom_y = int((max(y_vals_block1) + max(y_vals_block2)) / 2)
+            if found:
+                distance_px = end_x - mid_x
+                distance_mm = distance_px * scale_factor  # ✅ Use dynamically calculated scale
 
-            y_positions = [top_y, mid_y, bottom_y]
-            distances_px = []
-            lines_to_draw = []
+                # Draw and display distance
+                cv.line(frame, (mid_x, mid_y), (end_x, mid_y), (0, 0, 255), 2)
+                cv.putText(frame, f"Gap: {distance_px}px", (mid_x, mid_y - 15),
+                        cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                cv.putText(frame, f"Gap: {distance_mm:.2f}mm", (mid_x, mid_y + 10),
+                        cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
-            for y in y_positions:
-                # Start from right edge of block1 and scan to right
-                x_start = int(max(box1, key=lambda pt: pt[0])[0])
-                x = x_start
-                found = False
+                # === ADDITIONAL TOP AND BOTTOM LINE GAP MEASUREMENTS ===
+                top_y = min(right_edge[0][1], right_edge[1][1])
+                bottom_y = max(right_edge[0][1], right_edge[1][1])
+                x_start = mid_x
 
-                while x < frame.shape[1]:
-                    inside = cv.pointPolygonTest(block2["contour"], (x, y), False)
-                    if inside >= 0:
-                        found = True
-                        break
-                    x += 1
+                distances_px = [distance_px]  # include mid-point measurement
 
-                gap_px = max(0, x - x_start)
-                distances_px.append(gap_px)
-                if found and gap_px > 0:
-                    lines_to_draw.append(((x_start, y), (x, y)))
+                for y in [top_y, bottom_y]:
+                    end_x_extra = x_start
+                    found_extra = False
+                    while end_x_extra < frame.shape[1]:
+                        test_point = (end_x_extra, int(y))
+                        inside = cv.pointPolygonTest(block2["contour"], test_point, False)
+                        if inside >= 0:
+                            found_extra = True
+                            break
+                        end_x_extra += 1
 
-            # Calculate average gap
-            avg_gap_px = sum(distances_px) / len(distances_px)
-            avg_gap_mm = avg_gap_px * scale_factor
+                    if found_extra:
+                        distances_px.append(end_x_extra - x_start)
+                        cv.line(frame, (x_start, int(y)), (end_x_extra, int(y)), (0, 0, 255), 2)
 
-            # Draw lines only if gap exists
-            if avg_gap_px > 0:
-                for pt1, pt2 in lines_to_draw:
-                    cv.line(frame, pt1, pt2, (0, 0, 255), 2)
-
-            # Display text regardless
-            text_x = int(block1["center"][0])
-            text_y = int(block1["center"][1])
-            cv.putText(frame, f"Gap: {avg_gap_px:.1f}px", (text_x, text_y - 20),
-                    cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-            cv.putText(frame, f"Gap: {avg_gap_mm:.2f}mm", (text_x, text_y + 5),
-                    cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-
-
+                avg_px = sum(distances_px) / len(distances_px)
+                avg_mm = avg_px * scale_factor
+                cv.putText(frame, f"Avg: {avg_mm:.2f}mm", (mid_x, mid_y + 35),
+                           cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         cv.imshow("Frame", frame)
         if cv.waitKey(1) & 0xFF == ord('q'):
