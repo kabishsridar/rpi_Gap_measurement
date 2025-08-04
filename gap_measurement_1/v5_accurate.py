@@ -16,17 +16,6 @@ upper_white = np.array([180, 30, 255])
 
 KNOWN_WIDTH_MM = 24.5  # Known width of the reference block in mm
 
-def splash(boolean_val):
-    if boolean_val:
-        flash = cv.imread('OMAC_SOLUTION.png')
-        resized = cv.resize(flash, (1500, 800))
-        cv.imshow('waiting', resized)
-    else:
-        try:
-            cv.destroyWindow('waiting')
-        except cv.error:
-            pass  # if the window has not yet started, now it will not result an error. With help of this, it will pass the opencv error
-        
 def process_frame():
     while True:
         frame = picam2.capture_array()
